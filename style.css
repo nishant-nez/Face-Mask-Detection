@@ -1,0 +1,140 @@
+/* Main container styling */
+.main {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+}
+
+/* Header styling */
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.8s ease-in;
+}
+
+.header h1 {
+  color: white;
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header p {
+  color: #f0f0f0;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* Status card styling */
+.status-card {
+  padding: 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.status-card.active {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+}
+
+.status-card.inactive {
+  background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);
+  box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
+}
+
+.status-card h3 {
+  color: white;
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.status-card p {
+  color: #f0f0f0;
+  margin: 0.5rem 0 0 0;
+}
+
+/* Tips card styling */
+.tips-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3);
+}
+
+.tips-card ul {
+  color: white;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.tips-card li {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* Footer styling */
+.footer {
+  text-align: center;
+  padding: 1rem;
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Streamlit specific overrides */
+.stButton > button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 2rem;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.stButton > button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+/* Sidebar styling */
+section[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+}
+
+section[data-testid="stSidebar"] .css-1d391kg {
+  color: white;
+}
+
+/* Metric styling */
+.css-1xarl3l {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+
+/* Image container */
+img {
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
