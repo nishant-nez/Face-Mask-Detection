@@ -31,8 +31,6 @@ def download_model():
     if not os.path.exists(model_path):
         with st.spinner('Downloading model... This may take a minute.'):
             try:
-                # Option A: Google Drive (recommended)
-                # Replace 'YOUR_FILE_ID' with your actual Google Drive file ID
                 file_id = '1Ms4mpeBdXNIV7U01XHK4vkeO2SrANoGV'
                 url = f'https://drive.google.com/uc?id={file_id}'
                 gdown.download(url, model_path, quiet=False)
@@ -171,7 +169,7 @@ with col1:
         frame_placeholder = st.empty()
         
         if run_webcam:
-            cap = cv2.VideoCapture("http://192.168.1.67:8080/video")
+            cap = cv2.VideoCapture(0)
             
             total_frames = 0
             mask_count = 0
