@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from keras.models import load_model
 from PIL import Image
+from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 import time
 import os
 import gdown
@@ -163,68 +164,63 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     if detection_mode == "Webcam":
-        st.markdown("### 📹 Live Webcam Feed")
-        
-        run_webcam = st.checkbox("Start Webcam", value=False)
-        frame_placeholder = st.empty()
-        
-        if run_webcam:
-            cap = cv2.VideoCapture(0)
-            
-            total_frames = 0
-            mask_count = 0
-            no_mask_count = 0
-            
-            while run_webcam:
-                ret, frame = cap.read()
-                if not ret:
-                    st.error("Failed to access webcam")
-                    break
-                
-                processed_frame, mask_det, no_mask_det, face_count = process_frame(frame)
-                
-                # Update statistics
-                total_frames += 1
+        st.markdown("### 📹 Live Webcam Feed (WebRTC)")
+
+        class MaskDetectionTransformer(VideoTransformerBase):
+            def __init__(self):
+                self.mask_count = 0
+                self.no_mask_count = 0
+                self.total_frames = 0
+                self.face_count = 0
+
+            def transform(self, frame):
+                img = frame.to_ndarray(format="bgr24")
+                processed_frame, mask_det, no_mask_det, face_count = process_frame(img)
+
+                self.total_frames += 1
                 if mask_det:
-                    mask_count += 1
+                    self.mask_count += 1
                 if no_mask_det:
-                    no_mask_count += 1
-                
-                # Convert BGR to RGB for display
-                processed_frame_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
-                frame_placeholder.image(processed_frame_rgb, channels="RGB", use_container_width=True)
-                
-                # Update stats in sidebar
-                with stats_placeholder.container():
-                    st.metric("Faces Detected", face_count)
-                    st.metric("With Mask", mask_count)
-                    st.metric("Without Mask", no_mask_count)
-                    if total_frames > 0:
-                        compliance = (mask_count / total_frames) * 100
-                        st.metric("Compliance Rate", f"{compliance:.1f}%")
-                
-                time.sleep(0.03)  # ~30 FPS
-            
-            cap.release()
-    
-    else:  # Upload Image mode
+                    self.no_mask_count += 1
+                self.face_count = face_count
+
+                return processed_frame
+
+        ctx = webrtc_streamer(
+            key="mask-detection",
+            video_transformer_factory=MaskDetectionTransformer,
+            media_stream_constraints={"video": True, "audio": False},
+        )
+
+        if ctx.video_transformer:
+            # Update sidebar stats live
+            with stats_placeholder.container():
+                st.metric("Faces Detected", ctx.video_transformer.face_count)
+                st.metric("With Mask", ctx.video_transformer.mask_count)
+                st.metric("Without Mask", ctx.video_transformer.no_mask_count)
+                if ctx.video_transformer.total_frames > 0:
+                    compliance = (
+                        ctx.video_transformer.mask_count / ctx.video_transformer.total_frames
+                    ) * 100
+                    st.metric("Compliance Rate", f"{compliance:.1f}%")
+
+    else:  # Upload Image mode remains unchanged
         st.markdown("### 📤 Upload Image")
         uploaded_file = st.file_uploader(
             "Choose an image...",
             type=['jpg', 'jpeg', 'png'],
             help="Upload an image to detect face masks"
         )
-        
+
         if uploaded_file is not None:
             file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
             image = cv2.imdecode(file_bytes, 1)
-            
+
             processed_image, mask_det, no_mask_det, face_count = process_frame(image)
             processed_image_rgb = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
-            
+
             st.image(processed_image_rgb, channels="RGB", use_container_width=True)
-            
-            # Display results
+
             with stats_placeholder.container():
                 st.metric("Faces Detected", face_count)
                 if mask_det:
@@ -235,23 +231,34 @@ with col1:
 with col2:
     st.markdown("### 🎯 Detection Status")
     status_placeholder = st.empty()
-    
-    # Real-time status indicator
-    if detection_mode == "Webcam" and run_webcam:
-        status_placeholder.markdown("""
-            <div class="status-card active">
-                <h3>🟢 Active</h3>
-                <p>Camera is running</p>
-            </div>
-        """, unsafe_allow_html=True)
+
+    # Real-time status based on WebRTC context
+    if detection_mode == "Webcam":
+        # Check if WebRTC is running
+        is_active = "ctx" in locals() and ctx and ctx.state.playing
+        if is_active:
+            status_placeholder.markdown("""
+                <div class="status-card active">
+                    <h3>🟢 Active</h3>
+                    <p>Camera is running</p>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            status_placeholder.markdown("""
+                <div class="status-card inactive">
+                    <h3>⚪ Inactive</h3>
+                    <p>Camera is off</p>
+                </div>
+            """, unsafe_allow_html=True)
     else:
+        # When in "Upload Image" mode
         status_placeholder.markdown("""
             <div class="status-card inactive">
                 <h3>⚪ Inactive</h3>
                 <p>Camera is off</p>
             </div>
         """, unsafe_allow_html=True)
-    
+
     st.markdown("---")
     st.markdown("### 💡 Tips")
     st.markdown("""
